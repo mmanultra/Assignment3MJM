@@ -42,4 +42,6 @@ ax[3].set_title('Autoencoder 56x56')
 ax[3].set_aspect('equal')
 
 plt.tight_layout()
+plt.savefig("my_plot_quick.png")
 plt.show()
+

@@ -59,26 +59,39 @@ autoencoder.save('autoencoder.h5')
 mse = autoencoder.evaluate(test_data, test_data)
 print("Test MSE:", mse)
 
-# Select a random sample of test data
-sample_idx = random.sample(range(len(test_data)), 3)
+# randomly select one image from the test data
+idx = np.random.randint(0, len(test_data))
+image = test_data[idx]
 
-# Generate and compare upscaled images
-fig, axs = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+# resize the image to 56x56 using cv2
+true_56 = cv2.resize(image, (56, 56), interpolation=cv2.INTER_CUBIC)
 
-for i, idx in enumerate(sample_idx):
-    img = test_data[idx]
-    img = np.expand_dims(img, axis=0)
-    upscaled = autoencoder.predict(img)
-    upscaled = np.squeeze(upscaled, axis=0)
-    true_upscaled = cv2.resize(img.squeeze(), (56, 56))
+# preprocess the image for the autoencoder
+image_28 = np.expand_dims(image, axis=0)
+image_28 = np.expand_dims(image_28, axis=-1)
 
-    # Display original, autoencoder-generated, and true upscaled images
-    axs[i][0].imshow(img.squeeze(), cmap='gray')
-    axs[i][0].set_title("Original")
-    axs[i][1].imshow(upscaled, cmap='gray')
-    axs[i][1].set_title("Autoencoder-generated")
-    axs[i][2].imshow(true_upscaled, cmap='gray')
-    axs[i][2].set_title("True upscaled")
+# generate the autoencoder's 28x28 and 56x56 predictions
+predicted_28 = autoencoder.predict(image_28)
+predicted_56 = cv2.resize(predicted_28[0].squeeze(), (56, 56), interpolation=cv2.INTER_CUBIC)
+
+# display the images side by side
+fig, ax = plt.subplots(1,4, figsize=(12,3))
+ax[0].imshow(image, cmap='gray')
+ax[0].set_title('Original 28x28')
+ax[0].set_aspect('equal')
+
+ax[1].imshow(true_56, cmap='gray')
+ax[1].set_title('True 56x56')
+ax[1].set_aspect('equal')
+
+ax[2].imshow(predicted_28.squeeze(), cmap='gray')
+ax[2].set_title('Autoencoder 28x28')
+ax[2].set_aspect('equal')
+
+ax[3].imshow(predicted_56, cmap='gray')
+ax[3].set_title('Autoencoder 56x56')
+ax[3].set_aspect('equal')
 
 plt.tight_layout()
+plt.savefig("my_plot_main.png")
 plt.show()
